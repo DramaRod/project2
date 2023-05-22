@@ -15,8 +15,8 @@ use App\Http\Controllers\Api\Auth\UserController;
 |
 */
 Route::post('user/register', [UserController::class, 'register']);
+Route::post('user/login', [UserController::class, 'login']);
 Route::get('user/verify', [UserController::class, 'verifyEmail'])->name('mail.verify');
-Route::view('/hi', 'emails.aaa');
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

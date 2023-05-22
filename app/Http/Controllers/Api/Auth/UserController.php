@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginUserRequest;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Models\User;
 use App\Models\EmailVerify;
 use Illuminate\Support\Str;
@@ -11,25 +13,25 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Mail\EmailVerificationMail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+
 
 class UserController extends Controller
 {
 
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
         DB::beginTransaction();
         try {
-            $user = $request->only('name', 'email', 'password');
+            $user = $request->all();
             $user['password'] = Hash::make($user['password']);
             User::create($user);
 
-
             $emailVerify = EmailVerify::updateOrCreate(
-                ['email' => $user['email']],
-                [
-                    'token' => Str::random(255), 
-                    'expired_at' => Carbon::now()->addMinutes(5)
+                ['email' => $user['email'],
+                'token' => Str::random(255), 
+                'expired_at' => Carbon::now()->addMinutes(5)
                 ]
             );
             Mail::to($user['email'])->send(
@@ -42,6 +44,8 @@ class UserController extends Controller
             throw $th;
         }
     }
+
+    /**************************************************************************************/
 
     public function verifyEmail(Request $request)
     {
@@ -58,65 +62,24 @@ class UserController extends Controller
         return response()->json([ 'message' => 'Your account has been verified' ]);
     }
 
-
-
-
-
-
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    /**********************************************************************************************/
+    
+    public function login(LoginUserRequest $request)
     {
-        //
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password]))
+        {
+            /** @var \App\Models\User $user **/
+            $user = Auth::user();
+            if ($user->email_verified_at === null) {
+                return response()->json(['message' => 'Email not verified'], 401);
+            }
+            $user ['token'] = $user->createtoken('A7med')->accessToken;
+            return response()->json(['msg'=>'User login successfully' ,'user'=>$user  ], 200);
+        }
+        else
+        {
+            return response()->json(['email or password are wrong , please try again'],404 );
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

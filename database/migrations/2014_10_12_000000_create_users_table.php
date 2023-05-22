@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+            $table->string('phone');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            $table->integer('role_id')->unsigned();
+            $table->integer('role_id')->unsigned()->default(5);
             // role 1-admin  2-mod  3-teacher  4-student  5-user
             
             $table->integer('gender_id')->unsigned();
