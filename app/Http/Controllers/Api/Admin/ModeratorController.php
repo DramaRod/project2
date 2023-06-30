@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Moderator;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Moderator\ModeratorCheckInRequest;
+use App\Http\Resources\ModeratorResource;
+use App\Http\Requests\Moderator\ModeratorStoreRequest;
 
 class ModeratorController extends Controller
 {
@@ -12,54 +18,43 @@ class ModeratorController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $mods = Moderator::get();
+        return response()->json(['data'=> ModeratorResource::collection( $mods ) ], 200) ;
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ModeratorStoreRequest $request)
     {
-        //
+        $user=User::find($request->user_id)->update(['role_id'=>2]);
+        $mod = Moderator::create([
+            'user_id' => $request->user_id,
+            'date'=> Carbon::now()
+        ]);
+        return response()->json(['msg'=>$mod->user->name .' has been promoted to moderator'], 200) ;
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(ModeratorCheckInRequest $request)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        $mod = Moderator::find($request->moderator_id);
+        return response()->json([
+            'message'=> "Successfull",
+            'data'=>  new ModeratorResource( $mod ) 
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(ModeratorCheckInRequest $request)
     {
-        //
+        $mod = Moderator::find($request->moderator_id);
+        $user= $mod->user->update(['role_id'=>5]);
+        $mod->delete();
+        return response()->json(['msg'=>'Moderator unpromoted successfully'], 200) ;
     }
 }

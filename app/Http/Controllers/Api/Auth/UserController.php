@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
-
 class UserController extends Controller
 {
 
@@ -66,8 +65,7 @@ class UserController extends Controller
     
     public function login(LoginUserRequest $request)
     {
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password]))
-        {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])){
             /** @var \App\Models\User $user **/
             $user = Auth::user();
             if ($user->email_verified_at === null) {
@@ -76,10 +74,8 @@ class UserController extends Controller
             $user ['token'] = $user->createtoken('A7med')->accessToken;
             return response()->json(['msg'=>'User login successfully' ,'user'=>$user  ], 200);
         }
-        else
-        {
+        else{
             return response()->json(['email or password are wrong , please try again'],404 );
         }
     }
-
 }

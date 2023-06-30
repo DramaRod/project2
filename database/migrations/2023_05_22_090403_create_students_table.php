@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->cascadeOnDelete();
             
             $table->date('date');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
